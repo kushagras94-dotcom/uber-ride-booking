@@ -1,7 +1,9 @@
-DRIVER_TOKEN="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjZhMjk0OGQzZDNjYzc3MzlmMzc0MmQ2NSIsInJvbGUiOiJkcml2ZXIiLCJpYXQiOjE3ODEwOTE3MzcsImV4cCI6MTc4MTY5NjUzN30.8utCL36_qYAbtfe0GJPSqWTvtx8epi2c-gVKIwrq81Y"
-RIDE_ID="6a294b487d565c72b00f2e38"
+RIDER_TOKEN="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjZhMjk0NDdiNTI1NTA2ZWUzYzlhOTc4OSIsInJvbGUiOiJyaWRlciIsImlhdCI6MTc4MTI3NjY3MCwiZXhwIjoxNzgxODgxNDcwfQ.688xdvLcs4dbFJ7aOjsgld_JLzZ1_JmYDp-PoO6Zds8"
 
-curl -X PUT http://localhost:5000/api/rides/status/$RIDE_ID \
+curl -X POST http://localhost:5000/api/rides/request \
 -H "Content-Type: application/json" \
--H "Authorization: Bearer $DRIVER_TOKEN" \
--d '{"status": "completed"}'
+-H "Authorization: Bearer $RIDER_TOKEN" \
+-d '{
+  "pickup": {"lat": 26.9124, "lng": 75.7873, "address": "Jaipur Railway Station"},
+  "destination": {"lat": 26.8500, "lng": 75.8000, "address": "Jaipur Airport"}
+}'
