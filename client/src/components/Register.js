@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
 
-const API = 'https://expert-robot-x56q9xxq46p9hpwv6-5000.app.github.dev/api';
+const API = 'https://uber-ride-booking-backend.onrender.com/api';
 
 function Register() {
   const [form, setForm] = useState({ name: '', email: '', password: '', role: 'rider' });

@@ -3,8 +3,8 @@ import axios from 'axios';
 import { io } from 'socket.io-client';
 import { useNavigate } from 'react-router-dom';
 
-const API = 'https://expert-robot-x56q9xxq46p9hpwv6-5000.app.github.dev/api';
-const SOCKET_URL = 'https://expert-robot-x56q9xxq46p9hpwv6-5000.app.github.dev';
+const API = 'https://uber-ride-booking-backend.onrender.com/api';
+const SOCKET_URL = 'https://uber-ride-booking-backend.onrender.com';
 
 function DriverDashboard() {
   const [available, setAvailable] = useState(true);
