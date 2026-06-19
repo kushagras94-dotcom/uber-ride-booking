@@ -24,8 +24,8 @@ function Register() {
       localStorage.setItem('userId', res.data.user.id);
       localStorage.setItem('name', res.data.user.name);
 
-      if (res.data.user.role === 'rider') navigate('/rider');
-      else navigate('/driver');
+      if (res.data.user.role === 'rider') window.location.href = '/rider';
+      else window.location.href = '/driver';
 
     } catch (err) {
       setError(err.response?.data?.message || 'Registration failed');
