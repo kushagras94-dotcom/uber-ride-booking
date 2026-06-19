@@ -106,6 +106,17 @@ exports.requestRide = async (req, res) => {
       fare,
       status: 'requested'
     });
+    // Notify the matched driver instantly via Socket.io
+    const io = req.app.get('io');
+    if (io) {
+      io.to(`driver:${nearestDriver.userId}`).emit('ride:newRequest', {
+        rideId: ride._id,
+        pickup,
+        destination,
+        fare,
+        roadDistance: rideRoadData ? `${rideRoadData.distanceKm} km` : null
+      });
+    }
 
     res.status(201).json({
       message: 'Ride requested successfully',

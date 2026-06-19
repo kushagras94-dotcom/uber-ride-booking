@@ -11,6 +11,7 @@ function DriverDashboard() {
   const [currentRide, setCurrentRide] = useState(null);
   const [socket, setSocket] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [incomingRequest, setIncomingRequest] = useState(null);
   const navigate = useNavigate();
   const name = localStorage.getItem('name');
   const token = localStorage.getItem('token');
@@ -34,6 +35,13 @@ function DriverDashboard() {
     // Connect to WebSocket
     const newSocket = io(SOCKET_URL);
     newSocket.emit('driver:join', userId);
+
+    // Listen for new ride requests sent directly to this driver
+    newSocket.on('ride:newRequest', (data) => {
+      setIncomingRequest(data);
+      setCurrentRide(data.rideId);
+    });
+
     setSocket(newSocket);
   };
 
@@ -87,7 +95,14 @@ function DriverDashboard() {
           {loading ? 'Updating...' : `Go ${available ? 'Offline' : 'Online'}`}
         </button>
       </div>
-
+      {incomingRequest && (
+        <div style={{ ...styles.card, backgroundColor: '#fff8e1', border: '2px solid #ffa000' }}>
+          <h3>🚗 New Ride Request!</h3>
+          <p>Fare: ₹{incomingRequest.fare}</p>
+          <p>Distance: {incomingRequest.roadDistance || 'Calculating...'}</p>
+          <p style={{ fontSize: '14px', color: '#666' }}>Ride ID auto-filled below ⬇️</p>
+        </div>
+      )}
       <div style={styles.card}>
         <h3>Simulate Live Tracking</h3>
         <input
