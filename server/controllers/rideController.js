@@ -108,6 +108,7 @@ exports.requestRide = async (req, res) => {
     });
     // Notify the matched driver instantly via Socket.io
     const io = req.app.get('io');
+    console.log('Attempting to notify driver room:', `driver:${nearestDriver.userId}`);
     if (io) {
       io.to(`driver:${nearestDriver.userId}`).emit('ride:newRequest', {
         rideId: ride._id,
