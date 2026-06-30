@@ -13,6 +13,7 @@ function DriverDashboard() {
   const [loading, setLoading] = useState(false);
   const [incomingRequest, setIncomingRequest] = useState(null);
   const [responding, setResponding] = useState(false);
+  const [watchId, setWatchId] = useState(null);
   const navigate = useNavigate();
   const name = localStorage.getItem('name');
   const token = localStorage.getItem('token');
@@ -21,6 +22,13 @@ function DriverDashboard() {
   useEffect(() => {
     if (!token) navigate('/');
     setupDriver();
+
+    // Cleanup: stop GPS tracking if the driver leaves this page
+    return () => {
+      if (watchId !== null) {
+        navigator.geolocation.clearWatch(watchId);
+      }
+    };
   }, []);
 
   const setupDriver = async () => {
@@ -58,7 +66,30 @@ function DriverDashboard() {
     }
     setLoading(false);
   };
-
+  const startLiveTracking = (rideId) => {
+    if (!navigator.geolocation) {
+      alert('Geolocation is not supported by your browser');
+      return;
+    }
+    const id = navigator.geolocation.watchPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        if (socket) {
+          socket.emit('driver:location', {
+            driverId: userId,
+            rideId: rideId,
+            lat: latitude,
+            lng: longitude
+          });
+        }
+      },
+      (error) => {
+        console.error('Geolocation error:', error);
+      },
+      { enableHighAccuracy: true, maximumAge: 5000, timeout: 10000 }
+    );
+    setWatchId(id);
+  };
   const acceptRide = async () => {
     setResponding(true);
     try {
@@ -66,6 +97,7 @@ function DriverDashboard() {
         headers: { Authorization: `Bearer ${token}` }
       });
       setIncomingRequest(null);
+      startLiveTracking(incomingRequest.rideId);
     } catch (err) {
       alert('Could not accept ride: ' + (err.response?.data?.message || 'unknown error'));
     }
@@ -143,6 +175,20 @@ function DriverDashboard() {
               ❌ Reject
             </button>
           </div>
+        </div>
+      )}
+      {watchId !== null && (
+        <div style={{ ...styles.card, backgroundColor: '#e8f5e9' }}>
+          <h3>📍 Live tracking active</h3>
+          <button
+            style={{ ...styles.button, backgroundColor: '#c62828' }}
+            onClick={() => {
+              navigator.geolocation.clearWatch(watchId);
+              setWatchId(null);
+            }}
+          >
+            Stop Tracking
+          </button>
         </div>
       )}
       <div style={styles.card}>
