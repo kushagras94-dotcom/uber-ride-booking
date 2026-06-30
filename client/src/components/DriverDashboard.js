@@ -12,6 +12,7 @@ function DriverDashboard() {
   const [socket, setSocket] = useState(null);
   const [loading, setLoading] = useState(false);
   const [incomingRequest, setIncomingRequest] = useState(null);
+  const [responding, setResponding] = useState(false);
   const navigate = useNavigate();
   const name = localStorage.getItem('name');
   const token = localStorage.getItem('token');
@@ -58,6 +59,32 @@ function DriverDashboard() {
     setLoading(false);
   };
 
+  const acceptRide = async () => {
+    setResponding(true);
+    try {
+      await axios.put(`${API}/rides/accept/${incomingRequest.rideId}`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setIncomingRequest(null);
+    } catch (err) {
+      alert('Could not accept ride: ' + (err.response?.data?.message || 'unknown error'));
+    }
+    setResponding(false);
+  };
+
+  const rejectRide = async () => {
+    setResponding(true);
+    try {
+      await axios.put(`${API}/rides/reject/${incomingRequest.rideId}`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setIncomingRequest(null);
+      setCurrentRide(null);
+    } catch (err) {
+      alert('Could not reject ride: ' + (err.response?.data?.message || 'unknown error'));
+    }
+    setResponding(false);
+  };
   const simulateLocationUpdate = () => {
     if (socket && currentRide) {
       const newLat = 26.9124 + (Math.random() * 0.01);
@@ -100,7 +127,22 @@ function DriverDashboard() {
           <h3>🚗 New Ride Request!</h3>
           <p>Fare: ₹{incomingRequest.fare}</p>
           <p>Distance: {incomingRequest.roadDistance || 'Calculating...'}</p>
-          <p style={{ fontSize: '14px', color: '#666' }}>Ride ID auto-filled below ⬇️</p>
+          <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+            <button
+              style={{ ...styles.button, backgroundColor: '#2e7d32', marginTop: 0 }}
+              onClick={acceptRide}
+              disabled={responding}
+            >
+              ✅ Accept
+            </button>
+            <button
+              style={{ ...styles.button, backgroundColor: '#c62828', marginTop: 0 }}
+              onClick={rejectRide}
+              disabled={responding}
+            >
+              ❌ Reject
+            </button>
+          </div>
         </div>
       )}
       <div style={styles.card}>

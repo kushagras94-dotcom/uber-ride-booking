@@ -152,7 +152,21 @@ exports.acceptRide = async (req, res) => {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
-
+// REJECT A RIDE
+exports.rejectRide = async (req, res) => {
+  try {
+    const ride = await Ride.findById(req.params.id);
+    if (!ride) return res.status(404).json({ message: 'Ride not found' });
+    if (ride.status !== 'requested') {
+      return res.status(400).json({ message: 'Ride no longer available' });
+    }
+    ride.status = 'cancelled';
+    await ride.save();
+    res.status(200).json({ message: 'Ride rejected', ride });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
 // UPDATE RIDE STATUS
 exports.updateRideStatus = async (req, res) => {
   try {
