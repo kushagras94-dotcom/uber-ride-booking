@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { io } from 'socket.io-client';
 import { useNavigate } from 'react-router-dom';
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 
 const API = 'https://uber-ride-booking-backend.onrender.com/api';
 const SOCKET_URL = 'https://uber-ride-booking-backend.onrender.com';
@@ -14,6 +17,7 @@ function DriverDashboard() {
   const [incomingRequest, setIncomingRequest] = useState(null);
   const [responding, setResponding] = useState(false);
   const [watchId, setWatchId] = useState(null);
+  const [driverLocation, setDriverLocation] = useState(null);
   const navigate = useNavigate();
   const name = localStorage.getItem('name');
   const token = localStorage.getItem('token');
@@ -74,6 +78,7 @@ function DriverDashboard() {
     const id = navigator.geolocation.watchPosition(
       (position) => {
         const { latitude, longitude } = position.coords;
+        setDriverLocation({ lat: latitude, lng: longitude });
         if (socket) {
           socket.emit('driver:location', {
             driverId: userId,
@@ -180,11 +185,42 @@ function DriverDashboard() {
       {watchId !== null && (
         <div style={{ ...styles.card, backgroundColor: '#e8f5e9' }}>
           <h3>📍 Live tracking active</h3>
+          {driverLocation && currentRide && (
+            <div style={{ height: '300px', borderRadius: '8px', overflow: 'hidden', marginBottom: '1rem' }}>
+              <MapContainer
+                center={[driverLocation.lat, driverLocation.lng]}
+                zoom={14}
+                style={{ height: '100%', width: '100%' }}
+              >
+                <TileLayer
+                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                  attribution='© OpenStreetMap contributors'
+                />
+                <Marker position={[driverLocation.lat, driverLocation.lng]}>
+                  <Popup>You are here</Popup>
+                </Marker>
+                {incomingRequest?.pickup && (
+                  <Marker
+                    position={[incomingRequest.pickup.lat, incomingRequest.pickup.lng]}
+                    icon={L.icon({
+                      iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png',
+                      shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+                      iconSize: [25, 41],
+                      iconAnchor: [12, 41]
+                    })}
+                  >
+                    <Popup>Pickup point</Popup>
+                  </Marker>
+                )}
+              </MapContainer>
+            </div>
+          )}
           <button
             style={{ ...styles.button, backgroundColor: '#c62828' }}
             onClick={() => {
               navigator.geolocation.clearWatch(watchId);
               setWatchId(null);
+              setDriverLocation(null);
             }}
           >
             Stop Tracking
